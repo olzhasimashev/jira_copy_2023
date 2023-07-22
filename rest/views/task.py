@@ -4,6 +4,7 @@ from tasks.models import Task
 from rest.serializers.task import TaskSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from datetime import datetime
 
 
 class TaskList(generics.ListAPIView):
@@ -19,6 +20,14 @@ class TaskSingle(generics.RetrieveAPIView):
 class TaskCreate(generics.CreateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
+    
+    def create(self, request, *args, **kwargs):
+        input_deadline = request.data.get('deadline')
+        if input_deadline:
+            parsed_deadline = datetime.strptime(input_deadline, '%a %b %d %Y %H:%M:%S %Z%z')
+            request.data['deadline'] = parsed_deadline.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+        return super().create(request, *args, **kwargs)
     
 class TaskUpdate(generics.RetrieveUpdateAPIView):
     queryset = Task.objects.all()
