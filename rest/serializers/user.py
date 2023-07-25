@@ -21,3 +21,11 @@ class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'password', 'is_manager', 'is_executor')
+        
+class UserUpdateAsExecutor(serializers.ModelSerializer):
+    def validate_password(self, value: str) -> str:
+        return make_password(value)
+    
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'password') 

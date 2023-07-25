@@ -1,13 +1,15 @@
 from rest_framework import generics
 from rest_framework import permissions
 from tasks.models import Task
-from rest.serializers.task import TaskSerializer, TaskCreateSerializer
+from rest.serializers.task import TaskSerializer, TaskCreateSerializer, TaskUpdateExecutorSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest.permissions import IsExecutorUser, IsManagerUser
+from rest.permissions import    (IsExecutorUser, 
+                                IsManagerUser,
+                                IsSelfUserOrReadOnly,
+                                IsTaskExecutorOrReadOnly)
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
-
 
 class TaskList(generics.ListAPIView):
     queryset = Task.objects.all()
@@ -37,14 +39,31 @@ class TaskCreate(generics.CreateAPIView):
 class TaskUpdate(generics.RetrieveUpdateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
+    permission_classes = [IsManagerUser]
     
 class TaskDelete(generics.RetrieveDestroyAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
+    permission_classes = [IsManagerUser]
     
 class TaskManaged(generics.ListAPIView):
     serializer_class = TaskSerializer
+    permission_classes = [IsManagerUser]
 
     def get_queryset(self):
         manager_id = self.kwargs['pk']
         return Task.objects.filter(manager__id=manager_id)
+    
+class TaskExecuted(generics.ListAPIView):
+    serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        executor_id = self.kwargs['pk']
+        return Task.objects.filter(executors__id=executor_id)
+    
+class TaskActive(generics.UpdateAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskUpdateExecutorSerializer
+    permission_classes = [IsTaskExecutorOrReadOnly]
+    
