@@ -1,4 +1,5 @@
 from django.urls import path, include
+from rest.views.manager import ManagerList
 from rest.views.task import (TaskList,
                             TaskSingle,
                             TaskCreate,
@@ -7,7 +8,6 @@ from rest.views.task import (TaskList,
                             TaskManaged,
                             TaskExecuted,
                             TaskActive)
-from rest.views.manager import ManagerList
 from rest.views.user import (UserList,
                             UserCreate,
                             UserDelete,

@@ -1,11 +1,12 @@
 from rest_framework import generics
 from rest_framework import permissions
 from tasks.models import Task
-from rest.serializers.task import TaskSerializer, TaskCreateSerializer, TaskUpdateExecutorSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest.permissions import    (IsExecutorUser, 
-                                IsManagerUser,
+from rest.serializers.task import   (TaskSerializer,
+                                    TaskCreateSerializer,
+                                    TaskUpdateExecutorSerializer)
+from rest.permissions import    (IsManagerUser,
                                 IsSelfUserOrReadOnly,
                                 IsTaskExecutorOrReadOnly)
 from rest_framework.permissions import IsAuthenticated

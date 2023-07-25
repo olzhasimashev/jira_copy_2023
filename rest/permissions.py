@@ -1,11 +1,4 @@
 from rest_framework import permissions
-
-class IsExecutorUser(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user and request.user.is_executor
-    
-    def has_object_permission(self, request, view, obj):
-        return request.user and request.user.is_executor
     
 class IsManagerUser(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -15,9 +8,7 @@ class IsManagerUser(permissions.BasePermission):
         return request.user and request.user.is_manager
     
 class IsSelfUserOrReadOnly(permissions.BasePermission):
-    """
-    Custom permission to only allow users to edit their own profile
-    """
+    # Custom permission to only allow users to edit their own profile
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
@@ -25,9 +16,7 @@ class IsSelfUserOrReadOnly(permissions.BasePermission):
         return obj == request.user
 
 class IsTaskExecutorOrReadOnly(permissions.BasePermission):
-    """
-    Custom permission to only allow executors of a task to update the task's is_active field
-    """
+    # Custom permission to only allow executors of a task to update the task's is_active field
     def has_object_permission(self, request, view, obj):
         # Read permissions are allowed for any request
         if request.method in permissions.SAFE_METHODS:
