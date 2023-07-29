@@ -3,14 +3,17 @@ from rest_framework import permissions
 from tasks.models import Task
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest.serializers.task import   (TaskSerializer,
-                                    TaskCreateSerializer,
-                                    TaskUpdateExecutorSerializer)
-from rest.permissions import    (IsManagerUser,
-                                IsSelfUserOrReadOnly,
-                                IsTaskExecutorOrReadOnly)
+from rest.serializers.task import (TaskSerializer,
+                                   TaskCreateSerializer,
+                                   TaskUpdateExecutorSerializer)
+from rest.permissions import (IsManagerUser,
+                              IsSelfUserOrReadOnly,
+                              IsTaskExecutorOrReadOnly)
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
+import logging
+
+logger = logging.getLogger("main")
 
 class TaskList(generics.ListAPIView):
     queryset = Task.objects.all()
@@ -18,35 +21,44 @@ class TaskList(generics.ListAPIView):
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
     search_fields = ('name', 'id')
     permission_classes = [IsAuthenticated]
-    
+
+
 class TaskSingle(generics.RetrieveAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
-    
+
+
 class TaskCreate(generics.CreateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskCreateSerializer
     permission_classes = [IsManagerUser]
-    
+
     def create(self, request, *args, **kwargs):
         input_deadline = request.data.get('deadline')
         if input_deadline:
             parsed_deadline = datetime.strptime(input_deadline, '%a %b %d %Y %H:%M:%S %Z%z')
             request.data['deadline'] = parsed_deadline.strftime('%Y-%m-%dT%H:%M:%SZ')
+            
+        response = super().create(request, *args, **kwargs)
+            
+        logger.info(f'Task created with id {response.data["id"]} by user {request.user.id}')
 
         return super().create(request, *args, **kwargs)
-    
+
+
 class TaskUpdate(generics.RetrieveUpdateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsManagerUser]
-    
+
+
 class TaskDelete(generics.RetrieveDestroyAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsManagerUser]
-    
+
+
 class TaskManaged(generics.ListAPIView):
     serializer_class = TaskSerializer
     permission_classes = [IsManagerUser]
@@ -54,7 +66,8 @@ class TaskManaged(generics.ListAPIView):
     def get_queryset(self):
         manager_id = self.kwargs['pk']
         return Task.objects.filter(manager__id=manager_id)
-    
+
+
 class TaskExecuted(generics.ListAPIView):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
@@ -62,9 +75,9 @@ class TaskExecuted(generics.ListAPIView):
     def get_queryset(self):
         executor_id = self.kwargs['pk']
         return Task.objects.filter(executors__id=executor_id)
-    
+
+
 class TaskActive(generics.UpdateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskUpdateExecutorSerializer
     permission_classes = [IsTaskExecutorOrReadOnly]
-    

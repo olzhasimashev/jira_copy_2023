@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+from pythonjsonlogger.jsonlogger import JsonFormatter
+from jira.logging_formatters import CustomJsonFormatter
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -139,3 +142,29 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
   }
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    
+    'formatters': {
+        'json_formatter': {
+            '()': CustomJsonFormatter,
+        }
+    },
+    "handlers": {
+        "file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "info.log",
+            "formatter": "json_formatter",
+        },
+    },
+    "loggers": {
+        "main": {
+            "handlers": ["file"],
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
+}
